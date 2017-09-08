@@ -1,19 +1,26 @@
 package com.udacity.gradle.builditbigger;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
+
+import com.example.vasam.androiddisplayjokes.DisplayJoke;
 
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements GetJokeAsyncTask.AsyncResponse {
+    private String result = null;
+    private ProgressBar mLoadingIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mLoadingIndicator = (ProgressBar) findViewById(R.id.loader);
     }
 
 
@@ -39,9 +46,17 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-    public void tellJoke(View view) {
-        new GetJokeAsyncTask(this).execute();
+    @Override
+    public void returnJoke(String output) {
+        result = output;
     }
 
+    public void tellJoke(View view) {
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+        new GetJokeAsyncTask(MainActivity.this, this, mLoadingIndicator).execute();
+        Intent jokeIntent = new Intent(MainActivity.this, DisplayJoke.class);
+        Log.d("MainActivity", "return" + result);
+        jokeIntent.putExtra(Intent.EXTRA_TEXT, result);
+        startActivity(jokeIntent);
+    }
 }

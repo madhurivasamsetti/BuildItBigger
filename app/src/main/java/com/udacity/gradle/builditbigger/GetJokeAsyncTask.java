@@ -1,10 +1,10 @@
 package com.udacity.gradle.builditbigger;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
+import android.view.View;
+import android.widget.ProgressBar;
 
-import com.example.vasam.androiddisplayjokes.DisplayJoke;
 import com.example.vasam.myapplication.backend.myApi.MyApi;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
@@ -21,10 +21,18 @@ import java.io.IOException;
 public class GetJokeAsyncTask extends AsyncTask<String, Void, String> {
 
     private static MyApi myApiService = null;
-    private Context context;
+    private Context context=null;
+    private AsyncResponse mCallback=null;
+    private ProgressBar mLoadingIndicator=null;
 
-    public GetJokeAsyncTask(Context context) {
+    public interface AsyncResponse {
+        void returnJoke(String output);
+    }
+
+    public GetJokeAsyncTask(Context context, AsyncResponse mCallback, ProgressBar mLoadingIndicator) {
         this.context = context;
+        this.mCallback = mCallback;
+        this.mLoadingIndicator= mLoadingIndicator;
     }
 
     @Override
@@ -51,8 +59,8 @@ public class GetJokeAsyncTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String response) {
-        Intent jokeIntent = new Intent(context, DisplayJoke.class);
-        jokeIntent.putExtra(Intent.EXTRA_TEXT, response);
-        context.startActivity(jokeIntent);
+        mCallback.returnJoke(response);
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+
     }
 }
