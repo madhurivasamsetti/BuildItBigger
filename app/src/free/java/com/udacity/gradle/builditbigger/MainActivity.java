@@ -26,10 +26,9 @@ public class MainActivity extends AppCompatActivity implements GetJokeAsyncTask.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
+        mInterstitialAd.setAdUnitId(getString(R.string.adUnitId));
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
         mLoadingIndicator = (ProgressBar) findViewById(R.id.loader);
-
     }
 
     @Override
@@ -54,50 +53,68 @@ public class MainActivity extends AppCompatActivity implements GetJokeAsyncTask.
         return super.onOptionsItemSelected(item);
     }
 
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        if (mInterstitialAd.isLoaded()) {
+//            mInterstitialAd.show();
+//        } else {
+//            Log.d("MainActivity.class", "interstitial didn't load yet.");
+//        }
+//    }
+//
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//        if (mInterstitialAd.isLoaded()) {
+//            mInterstitialAd.show();
+//        } else {
+//            Log.d("MainActivity.class", "interstitial didn't load yet.");
+//        }
+//    }
+
     @Override
     public void returnJoke(String output) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
         result = output;
     }
 
     public void tellJoke(View view) {
-        new GetJokeAsyncTask(MainActivity.this,this,mLoadingIndicator).execute();
         if (mInterstitialAd.isLoaded()) {
             mInterstitialAd.show();
         } else {
-            Log.d("TAG", "interstitial didn't load yet.");
+            Log.d("MainActivity.class", "interstitial didn't load yet.");
         }
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+        new GetJokeAsyncTask(MainActivity.this,this).execute();
         mInterstitialAd.setAdListener(new AdListener() {
             @Override
             public void onAdLoaded() {
                 // Code to be executed when an ad finishes loading.
-                Log.i("Ads", "onAdLoaded");
             }
 
             @Override
             public void onAdFailedToLoad(int errorCode) {
                 // Code to be executed when an ad request fails.
-                Log.i("Ads", "onAdFailedToLoad");
             }
 
             @Override
             public void onAdOpened() {
                 // Code to be executed when the ad is displayed.
-                Log.i("Ads", "onAdOpened");
             }
 
             @Override
             public void onAdLeftApplication() {
                 // Code to be executed when the user has left the app.
-                Log.i("Ads", "onAdLeftApplication");
             }
 
             @Override
             public void onAdClosed() {
                 // Code to be executed when when the interstitial ad is closed.
-                Log.i("Ads", "onAdClosed");
                 Intent jokeIntent = new Intent(MainActivity.this,DisplayJoke.class);
                 jokeIntent.putExtra(Intent.EXTRA_TEXT, result);
                 startActivity(jokeIntent);
+                mInterstitialAd.loadAd(new AdRequest.Builder().build());
             }
         });
     }

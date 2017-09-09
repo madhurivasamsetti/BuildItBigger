@@ -10,6 +10,8 @@
         android:id="@+id/joke_textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAppearance="?android:textAppearanceMedium"
+        tools:text="joke of the day"
         android:padding="10dp"/>
 
 </FrameLayout>

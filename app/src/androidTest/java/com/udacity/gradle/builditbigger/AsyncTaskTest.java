@@ -1,82 +1,41 @@
 package com.udacity.gradle.builditbigger;
 
-
-import android.support.test.espresso.ViewInteraction;
-import android.support.test.rule.ActivityTestRule;
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.Matchers.allOf;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+/**
+ * Created by vasam on 9/8/2017.
+ */
 
 @RunWith(AndroidJUnit4.class)
 public class AsyncTaskTest {
 
-    @Rule
-    public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class);
+    @Mock
+    Context context;
+    GetJokeAsyncTask.AsyncResponse mAsyncResponse = mock(GetJokeAsyncTask.AsyncResponse.class);
+    String joke = null;
 
     @Test
-    public void asyncTaskTest() {
-        ViewInteraction appCompatButton = onView(
-                allOf(withText("Tell Joke"),
-                        withParent(allOf(withId(R.id.fragment),
-                                withParent(withId(android.R.id.content)))),
-                        isDisplayed()));
-        appCompatButton.perform(click());
-
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ViewInteraction textView = onView(
-                allOf(withId(R.id.joke_textView), withText("This is a new joke from javaJokes!!!!!"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(android.R.id.content),
-                                        0),
-                                0),
-                        isDisplayed()));
-        textView.check(matches(isDisplayed()));
-
+    public void checkJoke() throws InterruptedException, ExecutionException, TimeoutException {
+        GetJokeAsyncTask endpointsAsyncTask = new
+                GetJokeAsyncTask(InstrumentationRegistry.getTargetContext(), mAsyncResponse);
+        endpointsAsyncTask.execute();
+        joke = endpointsAsyncTask.get(20, TimeUnit.SECONDS);
+        assertNotNull(joke);
+        assertTrue(joke,joke.length()>0);
     }
 
-    private static Matcher<View> childAtPosition(
-            final Matcher<View> parentMatcher, final int position) {
-
-        return new TypeSafeMatcher<View>() {
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("Child at position " + position + " in parent ");
-                parentMatcher.describeTo(description);
-            }
-
-            @Override
-            public boolean matchesSafely(View view) {
-                ViewParent parent = view.getParent();
-                return parent instanceof ViewGroup && parentMatcher.matches(parent)
-                        && view.equals(((ViewGroup) parent).getChildAt(position));
-            }
-        };
-    }
 }

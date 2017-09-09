@@ -3,7 +3,6 @@ package com.udacity.gradle.builditbigger;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,7 +12,6 @@ import com.example.vasam.androiddisplayjokes.DisplayJoke;
 
 
 public class MainActivity extends AppCompatActivity implements GetJokeAsyncTask.AsyncResponse {
-    private String result = null;
     private ProgressBar mLoadingIndicator;
 
     @Override
@@ -48,15 +46,14 @@ public class MainActivity extends AppCompatActivity implements GetJokeAsyncTask.
 
     @Override
     public void returnJoke(String output) {
-        result = output;
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        Intent jokeIntent = new Intent(MainActivity.this, DisplayJoke.class);
+        jokeIntent.putExtra(Intent.EXTRA_TEXT, output);
+        startActivity(jokeIntent);
     }
 
     public void tellJoke(View view) {
         mLoadingIndicator.setVisibility(View.VISIBLE);
-        new GetJokeAsyncTask(MainActivity.this, this, mLoadingIndicator).execute();
-        Intent jokeIntent = new Intent(MainActivity.this, DisplayJoke.class);
-        Log.d("MainActivity", "return" + result);
-        jokeIntent.putExtra(Intent.EXTRA_TEXT, result);
-        startActivity(jokeIntent);
+        new GetJokeAsyncTask(MainActivity.this, this).execute();
     }
 }
